@@ -9,6 +9,12 @@ import {
   timer,
   interval,
   forkJoin,
+  fromEvent,
+  concatMap,
+  catchError,
+  EMPTY,
+  distinctUntilChanged,
+  switchMap,
 } from 'rxjs';
 import { ajax, AjaxResponse } from 'rxjs/ajax';
 
@@ -134,3 +140,21 @@ forkJoin([randomName$, randomBloodType$, randomBeers$]).subscribe(
     console.log(name, bloodType, beer);
   }
 );
+//<--------concatMap, switchMap and mergeMap---------->
+const inputEle = document.getElementById('input') as HTMLInputElement;
+const btnEle = document.getElementById('btn-search');
+
+fromEvent(btnEle, 'click')
+  .pipe(
+    map(() => inputEle?.value),
+    switchMap((value) =>
+      ajax(`https://random-data-api.com/api/${value}/random_${value}`).pipe(
+        catchError((error) => of(`Can not fetch data, ${error}`))
+      )
+    )
+  )
+  .subscribe({
+    next: (value) => console.log(value),
+    error: (error) => console.log('Error', error),
+    complete: () => console.log('Completed'),
+  });
