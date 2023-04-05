@@ -58,9 +58,9 @@ import { ajax, AjaxResponse } from 'rxjs/ajax';
 // }, 3000);
 
 //<----------ForkJoin------------>
-const randomName$ = ajax('https://random-data-api.com/api/v2/users');
-const randomBloodType$ = ajax('https://random-data-api.com/api/v2/blood_types');
-const randomBeers$ = ajax('https://random-data-api.com/api/v2/beers');
+// const randomName$ = ajax('https://random-data-api.com/api/v2/users');
+// const randomBloodType$ = ajax('https://random-data-api.com/api/v2/blood_types');
+// const randomBeers$ = ajax('https://random-data-api.com/api/v2/beers');
 
 // randomName$.subscribe((data: AjaxResponse<{ [key: string]: string }>) =>
 //   console.log(data.response.first_name)
@@ -73,13 +73,64 @@ const randomBeers$ = ajax('https://random-data-api.com/api/v2/beers');
 // );
 
 //<-------forkjoin--------> to call multiple api without waiting for other, maybe it similar to Promise.all
+// forkJoin([randomName$, randomBloodType$, randomBeers$]).subscribe(
+//   (data: any) => {
+//     const [name, bloodType, beer] = data;
+//     console.log(
+//       name.response.first_name,
+//       bloodType.response.group,
+//       beer.response.name
+//     );
+//   }
+// );
+
+//<------Filter------>
+// const newFeed$ = new Observable((subscriber) => {
+//   setTimeout(() => subscriber.next({ category: 'Swim' }), 1000);
+//   setTimeout(() => subscriber.next({ category: 'Foot' }), 2000);
+//   setTimeout(() => subscriber.next({ category: 'Bad' }), 3000);
+//   setTimeout(() => subscriber.next({ category: 'Ski' }), 4000);
+//   setTimeout(() => subscriber.next({ category: 'Skate' }), 5000);
+//   // subscriber.complete();
+// });
+
+// const Swim$ = newFeed$.pipe(
+//   filter(
+//     (value: { category: string }) =>
+//       value.category == 'Swim' || value.category === 'Foot'
+//   )
+// );
+
+// Swim$.subscribe({
+//   next: (value) => console.log(value),
+//   complete: () => console.log('Complete'),
+// });
+
+//<<-------Still forkJoin with map pipe, data cleaner when subscribe to-------->
+const randomName$ = ajax('https://random-data-api.com/api/v2/users').pipe(
+  map(
+    (ajaxResponse: AjaxResponse<{ [key: string]: string }>) =>
+      ajaxResponse.response.first_name
+  )
+);
+const randomBloodType$ = ajax(
+  'https://random-data-api.com/api/v2/blood_types'
+).pipe(
+  map(
+    (ajaxResponse: AjaxResponse<{ [key: string]: string }>) =>
+      ajaxResponse.response.group
+  )
+);
+const randomBeers$ = ajax('https://random-data-api.com/api/v2/beers').pipe(
+  map(
+    (ajaxResponse: AjaxResponse<{ [key: string]: string }>) =>
+      ajaxResponse.response.name
+  )
+);
+
 forkJoin([randomName$, randomBloodType$, randomBeers$]).subscribe(
   (data: any) => {
     const [name, bloodType, beer] = data;
-    console.log(
-      name.response.first_name,
-      bloodType.response.group,
-      beer.response.name
-    );
+    console.log(name, bloodType, beer);
   }
 );
